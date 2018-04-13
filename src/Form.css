@@ -1,0 +1,41 @@
+.subtittle {
+  font-size: 1.1em;
+  font-weight: 700;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+.custom-form-control {
+  max-width: 5em;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.centralize-in-column-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.subsession {
+  margin: 2em;
+}
+
+.buttons-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.overflow-body {
+  max-height: 30em;
+  overflow-y: scroll;
+}
