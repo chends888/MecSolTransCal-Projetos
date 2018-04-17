@@ -12,7 +12,7 @@ class Bcnodes extends Component {
 
   addPoint() {
     const bcnodes = this.props.bcnodes;
-    bcnodes.push([null, null, null]);
+    bcnodes.push([null, null]);
     this.props.handlePropertieChange(bcnodes);
   }
 
@@ -38,26 +38,19 @@ class Bcnodes extends Component {
         <div className="subtittle">Bcnodes</div>
         <div className="subsession">
           {this.props.bcnodes.map((bcnode, index) => {
-            return (
-              <div className="form-row" key={index}>
+            return <div className="form-row" key={index}>
                 <div className="centralize-in-column-center bold">
                   {" "}
                   Nó {index + 1}{" "}
                 </div>
-                <FormControl
-                  onChange={e => this.handleFormChange(e, 0, index)}
-                  className="custom-form-control"
-                  value={bcnode[0]}
-                />
-                {index > 0 ? (
-                  <Button onClick={() => this.handleRemove(index)}>
+                <FormControl onChange={e => this.handleFormChange(e, 0, index)} className="custom-form-control" value={bcnode[0]} />
+                <FormControl onChange={e => this.handleFormChange(e, 1, index)} className="custom-form-control" value={bcnode[1]} />
+                {index > 0 ? <Button
+                    onClick={() => this.handleRemove(index)}
+                  >
                     Remover
-                  </Button>
-                ) : (
-                  <div style={{ width: "6em" }} />
-                )}
-              </div>
-            );
+                  </Button> : <div style={{ width: "6em" }} />}
+              </div>;
           })}
           <Button bsStyle="success" onClick={this.addPoint}>
             {" "}

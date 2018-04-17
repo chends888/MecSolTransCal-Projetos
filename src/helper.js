@@ -1,3 +1,5 @@
+//codeshare.io/hugoisaechen
+
 const getEachElementsMatrix = (state) => {
     const elementsMatrix = [];
     state.incidences.map((incidence, incidenceIndex) => {
@@ -62,7 +64,7 @@ const superposeMatrix = (elementsMatrix) => {
     elementsMatrix.map((elementMatrix, index) => {
         for(var i =0; i < elementMatrix.length; i++) {
             for(var j =0; j < elementMatrix[i].length; j++) {
-                const a,b =  getSuperMatrixIndexes(index,i,j);
+                const {a,b} =  getSuperMatrixIndexes(index,i,j);
                 superMatrix[a][b] = elementMatrix[i][j];
             }
         }
@@ -87,11 +89,77 @@ const getGlobalForcesVector = (state) => {
         const force =  load[2];
         globalForcesVector[(loadNumber-1)*2 + direction -1] = force;
     });
-    return globalForcesVector;m                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     bkvjchccjxxjk
+    return globalForcesVector;
+};
+
+const getNodesDeslocationVector = (state) => {
+    const vector = [];
+    for(var i=0; i < state.coordinates.length *2;i+=1) {
+        vector.push(1);
+    }
+    state.bcnodes.map((bcnode) => {
+        const indexToPush = (bcnode[0]-1)*2 + (bcnode[1]-1);
+        vector[indexToPush] = 0;
+    });
+    return vector;
+};
+
+const applyContornConditions = (superposedMatrix, globalForcesVector) => {
+  	const vforcas2 = [];
+    const indices = [];
+    for(var força=0; força < globalForcesVector.length;força+=1) {
+        if(globalForcesVector[força] !== 0) {
+            indices.push(força);
+            vforcas2.push(globalForcesVector[força]);
+        }
+    }
+    const size = indices.length;
+    const matriz = [];
+    for(var i=0; i< size;i+=1) {
+        const row = [];
+        for(var j=0; j<size;j+=1) {
+            row.push(0);
+        }
+        matriz.push(row);
+    }
+    let k = 0;
+    let l = 0;
+    indices.map((i) => {
+        indices.map((j) => {
+            matriz[k][l] = superposedMatrix[i][j];
+            l+=1;
+        });
+        l = 0;
+        k+=1;
+    });
+    return {matriz, indices};
+};
+
+
+const calculateDeslocations = (matrix, nodesDesloc, forces) => {
+
 };
 
 export const doEverything = (state) => {
     const elementsMatrix =  getEachElementsMatrix(state);
     const superposedMatrix = superposeMatrix(elementsMatrix);
     const globalForcesVector = getGlobalForcesVector(state);
+    const nodesDeslocationVector = getNodesDeslocationVector(state);
+    const { matriz, indices } =  applyContornConditions(superposedMatrix);
+    const deslocations = calculateDeslocations(matriz, globalForcesVector);
+};
+
+export const getDemoState = (method,iterations,tolerance) => {
+    return {
+      method, iterations, tolerance,
+      step: 1,
+      showInputsModal: true,
+      coordinates: [[1, 0, 0],[2, 0, 0.4],[3, 0.3, 0.4]],
+      element_groups: [[1, 1, 'BAR'],[2, 1, 'BAR'],[3, 1, 'BAR']],
+      incidences: [[1,1,2],[2, 2, 3],[3, 3, 1]],
+      materials: [[Math.pow(210, 9), Math.pow(1570, 6), Math.pow(1570, 6)],[Math.pow(210, 9), Math.pow(1570, 6), Math.pow(1570, 6)], [Math.pow(210, 9), Math.pow(1570, 6), Math.pow(1570, 6)]],
+      geometric_properties:[[Math.pow(2,-4)], [Math.pow(2, -4)], [Math.pow(2, -4)]],
+      bcnodes:[[1,1],[2, 1],[2,2]],
+      loads: [[3,1,150],[3, 2, -100]],
+    };
 };
