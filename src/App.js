@@ -10,7 +10,7 @@ import GeometricProperties from "../src/GeometricProperties";
 import Bcnodes from "../src/Bcnodes";
 import Loads from "../src/Loads";
 import ChooseUserOptions  from '../src/ChooseUserOptions';
-import { getDemoState } from '../src/helper';
+import { getDemoState, savefile, doEverything } from '../src/helper';
 import Dashboard from '../src/Dashboard';
  
 class App extends Component {
@@ -30,18 +30,24 @@ class App extends Component {
       geometric_properties:[[null]],
       bcnodes:[[null]],
       loads: [[null,null,null]],
+      results: null,
     };
     this.handleInputsModal = this.handleInputsModal.bind(this);
     this.handlePropertieChange = this.handlePropertieChange.bind(this);
     this.handleStep = this.handleStep.bind(this);
     this.fullFillState = this.fullFillState.bind(this);
     this.handleSimulate = this.handleSimulate.bind(this);
+    this.atualizar = this.atualizar.bind(this);
   }
 
-  handlePropertieChange(newContent, key) {
+  handlePropertieChange(newContent, key, isNumber, atualize) {
     const state = this.state;
-    state[key]  = newContent;
-    this.setState(state);
+    state[key]  = isNumber ? Number(newContent) : newContent;
+    this.setState(state, () => {
+         if (atualize) {
+           this.atualizar();
+         }
+    });
   }
 
   handleSimulate() {
@@ -60,14 +66,29 @@ class App extends Component {
     } else {
       step = Number(this.state.step) - 1;
     }
+    if(this.state.step === 1 && step === 2) {
+      savefile(this.state);
+    }
     this.setState({step});
   }
 
-  handleInputsModal() {
-    this.setState({showInputsModal: !this.state.showInputsModal});
+  handleInputsModal(step) {
+    this.setState({showInputsModal: !this.state.showInputsModal}); 
+    if(typeof step === 'number') {
+      this.setState({step});
+    }
   }
 
+  atualizar() {
+    const object = doEverything(this.state);
+    this.setState({results: object},() => {
+      this.handleSimulate();
+    });
+  };
+
   render() {
+    console.log(this.state.method);
+    
     return <div className="App">
         {
           !this.state.simulate ?
@@ -97,7 +118,13 @@ class App extends Component {
           </div>
           :
             this.state.simulate ?
-            <Dashboard/>
+            <Dashboard 
+              handlePropertieChange={this.handlePropertieChange} 
+              handleInputsModal={this.handleInputsModal}
+              results={this.state.results}
+              state={this.state}
+              atualizar={this.atualizar}
+              />
             :
             ''
           }
@@ -153,7 +180,8 @@ class App extends Component {
                 >
                   {" "}
                   Prosseguir{" "}
-                </Button> : <Button onClick={this.handleSimulate} bsStyle='success'>
+                </Button> : 
+                <Button onClick={this.atualizar} bsStyle='success'>
                   {" "}
                   SIMULAR{" "}
                 </Button>}

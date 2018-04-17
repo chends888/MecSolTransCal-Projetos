@@ -87,3 +87,19 @@ h1 {
   font-weight: 700;
   font-family: 'arial';
 }
+
+.sidemenu {
+  padding: 1em;
+  height: 65vh;
+  border-left: 2px;
+  background-color: #d3d3d3;
+  border-radius: 5px;
+}
+
+.sidemenu-tittle {
+  text-align: center;
+}
+
+.sidemenu-subtitles {
+  
+}

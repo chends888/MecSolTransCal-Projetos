@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { FormControl, Button, Grid, Row, Col } from "react-bootstrap";
-import { Bar, Line, Radar } from "react-chartjs-2";
+import { Bar, Line, Radar, Scatter } from "react-chartjs-2";
+import SideMenu from '../src/SideMenu';
 
 
 class Dashboard extends Component {
@@ -10,12 +11,12 @@ class Dashboard extends Component {
 
   render() {
     const deslocationData= {
-        labels: ["Node 1", "Node 2", "Node 3"],
+        labels: ["Node 1", "Node 2"],
         datasets: [{
         label: "Deslocamentos",
         backgroundColor: "rgb(102, 0, 171)",
         borderColor: "rgb(102, 0, 171)",
-        data: [30, 40, 25],
+        data: this.props.results.displacements.map(e => e),
         }]
     };
     const deformationData= {
@@ -24,30 +25,32 @@ class Dashboard extends Component {
         label: "Deformações",
         backgroundColor: "rgb(230, 88, 58)",
         borderColor: "rgb(230, 88, 58)",
-        data: [1230, 483, 1115],
+        data: [0, 0.0005, 0.000416],
         }]
     };
     const tensaoData= {
         labels: ["Element 1", "Element 2", "Element 3"],
         datasets: [{
         label: "Tensões",
-        backgroundColor: "rgb(0, 236, 255)",
         borderColor: "rgb(0, 236, 255)",
-        data: [1500, 300, 800],
+        data: [0, 1001.73, -833.333],
         }]
     };
     const reactiosData= {
-        labels: ["R1", "R2", "R3"],
+        labels: ["R1", "R2", "R3", "R4"],
         datasets: [{
         label: "Reações",
         backgroundColor: "rgb(0, 0, 0)",
         borderColor: "rgb(230, 88, 58)",
-        data: [1500, 300, 800],
+        data: this.props.results.reaction_forces.map(e => e),
         }]
     };
+    
     return <div style={{margin:'2em'}}>
         <h1> Dashboard </h1>
         <Grid style={{margin:'2em'}}fluid>
+          <Row>
+          <Col md={9}>
           <Row>
             <Col md={6}>
               <div style={{ padding: "1em" }}>
@@ -84,6 +87,16 @@ class Dashboard extends Component {
               </div>
             </Col>
           </Row>
+          </Col>
+          <Col md={3}>
+            <SideMenu 
+              handlePropertieChange={this.props.handlePropertieChange}
+              tolerance={this.props.state.tolerance}
+              iterations={this.props.state.iterations}
+              atualizar={this.props.atualizar}
+              handleInputsModal={this.props.handleInputsModal}/>
+          </Col>
+        </Row>
         </Grid>
       </div>;
   }
