@@ -98,14 +98,10 @@ export const savefile = state => {
 //     });
 // };
 
-const  tensao = (x1, y1, x2, y2, length, modyoung) => {
-    // const cos = (x2 - x1)/length;
-	// const sen = (y2 - y1)/length;
-	// const cossen = [-cos, -sen, cos, sen];
-	// const matriz = [[x1], [y1], [x2], [y2]];
-	// let resultado = math.multiply(cossen, matriz);
-	// resultado = (resultado*modyoung)/length;
-	// return resultado;
+const  tensao = (deformations,materials) => {
+    return deformations.map((deformation, index) => {
+        return deformation*materials[index][0];
+    });
 };
 
 const getEachElementsMatrix = (state) => {
@@ -310,14 +306,8 @@ const Jacobi = (ite, tol, a, b) => {
     return { a: v, b: error };
 };
 
-const reac_apoios = (matrizona, vforcas, deslocamentos, indices, reactionIndexes) => {
+const reac_apoios = (matrizona, deslocamentos, indices, reactionIndexes) => {
     const apoios = reactionIndexes;
-    // for(var indice =0; indice <  vforcas.length;indice++) {   
-    //     if (vforcas[indice][0] === 0){
-	// 		apoios.push(indice);
-    //     }
-    // }
-
 	const sizel = apoios.length;
     const sizec = indices.length;   
     
@@ -336,7 +326,7 @@ const reac_apoios = (matrizona, vforcas, deslocamentos, indices, reactionIndexes
 	return reacoes;
 };
 
-const finalizeDeslocs = (deslocArray, indices, n ) => {
+const fillListWithZeros = (deslocArray, indices, n ) => {
     const array = [];
     let counterDeslocArray = 0;
     for(var i = 0; i < n * 2 ;i++) {
@@ -358,25 +348,48 @@ const getReactionIndices = (deslocIndices,n) => {
     return reactionIndices;
 };
 
+const calc_deformacao = (desloc_decomp, v) => {
+    console.log(desloc_decomp);
+    const length = Math.sqrt(Math.pow(v[0] - v[2], 2) + Math.pow(v[1] - v[3], 2));
+    const cos = (v[3] - v[1])/length;
+    const sen = (v[2] - v[0])/length;
+    const cossen = [[-cos, -sen, cos, sen]];
+    let resultado = math.multiply(cossen, desloc_decomp);
+    console.log(resultado);
+    resultado = resultado/length;
+    return resultado
+};
+
+const getDeformations = (state, deslocs) => {
+    const deformations = [];
+    state.incidences.map((incidence) => {
+        const firstNode = state.coordinates[incidence[1] - 1];
+        const secondNode = state.coordinates[incidence[2] - 1];
+        const pos = [firstNode[1], firstNode[2], secondNode[1], secondNode[2]];
+        const deslocation = [[deslocs[(incidence[1] - 1) * 2]], [deslocs[(incidence[1] - 1) * 2 + 1]],
+         [deslocs[(incidence[2] - 1) * 2]],[ deslocs[(incidence[2] - 1) * 2 + 1]]];
+        deformations.push(calc_deformacao(deslocation, pos));
+    });
+    return deformations
+};
+
+
 export const doEverything = (state) => {
     const elementsMatrix =  getEachElementsMatrix(state);
-    // const superposedMatrix = superposeMatrix(elementsMatrix);   
-    // const globalForcesVector = getGlobalForcesVector(state);    
-    // const nodesDeslocationVector = getNodesDeslocationVector(state); // n entendi onde vai usar isso que eu fiz     
-    const superposedMatrix = [[51200, 38400, 0, 0, -51200, -38400], [38400, 217361.8, 0, -188561.8, 38400, 28800], [0, 0, 141423.5, 0, -141423.5, 0], [0, -188561, 8, 0, 188561.5, 0, 0], [-51200, -38400, -141423.5, 0, 192621.3, 38400], [-38400, -28800, 0, 0, 38400, 28800]];
-    const globalForcesVector = [[0], [0], [0], [0], [1500], [-1000]];
-    const nodesDeslocationVector = [[0], [0], [0], [0], [1], [1]];
+    const superposedMatrix = superposeMatrix(elementsMatrix);   
+    const globalForcesVector = getGlobalForcesVector(state);    
+    const nodesDeslocationVector = getNodesDeslocationVector(state); // n entendi onde vai usar isso que eu fiz     
+    // const superposedMatrix = [[51200, 38400, 0, 0, -51200, -38400], [38400, 217361.8, 0, -188561.8, 38400, 28800], [0, 0, 141423.5, 0, -141423.5, 0], [0, -188561, 8, 0, 188561.5, 0, 0], [-51200, -38400, -141423.5, 0, 192621.3, 38400], [-38400, -28800, 0, 0, 38400, 28800]];
+    // const globalForcesVector = [[0], [0], [0], [0], [1500], [-1000]];
+    // const nodesDeslocationVector = [[0], [0], [0], [0], [1], [1]];
     console.log('vetor de deslocamento dos nós: ',nodesDeslocationVector);
     const { matriz, indices, vforcas2 } =  applyContornConditions(superposedMatrix, nodesDeslocationVector, globalForcesVector);
     console.log('indices com deslocamento: ', indices );
     console.log('forças globais cortadas: ', vforcas2);
     console.log('matriz contornada: ', matriz);
-    
-    
     let matrixAnswer;
     let error;
     console.log('Método de convergência selecionado: ', state.method);
-    
     if(state.method === 'jacobi') {
        const {a, b} =  Gauss(state.iterations, state.tolerance, matriz, vforcas2);
        matrixAnswer = a;
@@ -387,18 +400,20 @@ export const doEverything = (state) => {
         error = b;
     }
     const reactionIndices = getReactionIndices(indices, state.coordinates.length);
-    const reacoes = reac_apoios(superposedMatrix, globalForcesVector, matrixAnswer, indices, reactionIndices);  
-    const deslocs = finalizeDeslocs(matrixAnswer, indices, state.coordinates.length);
-    console.log('deslocamentos: ', deslocs);
-    console.log('reacoes de apoio: ', reacoes);
+    const reacoes = reac_apoios(superposedMatrix, matrixAnswer, indices, reactionIndices);  
+    const deslocs = fillListWithZeros(matrixAnswer, indices, state.coordinates.length);
+    const reactions = fillListWithZeros(reacoes, reactionIndices, state.coordinates.length);
+    console.log('deslocamentos: ', deslocs);   
+    console.log('reacoes de apoio: ', reactions);
+    const deformacoes = getDeformations(state,deslocs);  
+    console.log('deformações: ', deformacoes);
+    const tensoes = tensao(deformacoes,state.materials);
+    console.log('tensoes: ', tensoes);
     
-    
-    // const deformacoes = deformacao(state,matrixAnswer,indices);  
-    // const tensoes = tensao(deformacoes,state.materials);
     return {
         displacements: matrixAnswer,
-        // element_strains: tensoes,
-        // element_stresses: deformacoes,
+        element_strains: deformacoes,
+        element_stresses: tensoes,
         reaction_forces: reacoes,
     };
 };

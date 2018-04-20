@@ -25,7 +25,7 @@ class Dashboard extends Component {
         label: "Deformações",
         backgroundColor: "rgb(230, 88, 58)",
         borderColor: "rgb(230, 88, 58)",
-        data: [0, 0.0005, 0.000416],
+        data: this.props.results.element_strains.map(e => e),
         }]
     };
     const tensaoData= {
@@ -33,7 +33,7 @@ class Dashboard extends Component {
         datasets: [{
         label: "Tensões",
         borderColor: "rgb(0, 236, 255)",
-        data: [0, 1001.73, -833.333],
+        data:  this.props.results.element_stresses.map(e => e),
         }]
     };
     const reactiosData= {
