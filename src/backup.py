@@ -141,3 +141,16 @@ reacoesj = reac_apoios(matrizona, vforcas, jacobi, indices)
 print(jacobi)
 #print(reacoesg)
 print(reacoesj)
+###############################################################################
+def deformacao(desloc_decomp, indices, length, vforcas, v):
+
+	cos = (v[2] - v[0])/length
+	sen = (v[3] - v[1])/length
+	cossen = (([-cos], [-sen], [cos], [sen]))
+
+	resultado = np.matmul(desloc_decomp, cossen)
+	resultado = resultado/length
+	return resultado
+
+def tensao(deformacao, modyoung):
+	return (deformacao * modyoung)

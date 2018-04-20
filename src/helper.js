@@ -98,15 +98,15 @@ export const savefile = state => {
 //     });
 // };
 
-// const  tensao = (x1, y1, x2, y2, length, modyoung) => {
-//     const cos = (x2 - x1)/length;
-// 	const sen = (y2 - y1)/length;
-// 	const cossen = [-cos, -sen, cos, sen];
-// 	const matriz = [[x1], [y1], [x2], [y2]];
-// 	let resultado = math.multiply(cossen, matriz);
-// 	resultado = (resultado*modyoung)/length;
+const  tensao = (x1, y1, x2, y2, length, modyoung) => {
+    // const cos = (x2 - x1)/length;
+	// const sen = (y2 - y1)/length;
+	// const cossen = [-cos, -sen, cos, sen];
+	// const matriz = [[x1], [y1], [x2], [y2]];
+	// let resultado = math.multiply(cossen, matriz);
+	// resultado = (resultado*modyoung)/length;
 	// return resultado;
-// };
+};
 
 const getEachElementsMatrix = (state) => {
     const elementsMatrix = [];
@@ -205,24 +205,24 @@ const getGlobalForcesVector = (state) => {
 const getNodesDeslocationVector = (state) => {
     const vector = [];
     for(var i=0; i < state.coordinates.length *2;i+=1) {
-        vector.push(1);
+        vector.push([1]);
     }
     state.bcnodes.map((bcnode) => {
         const indexToPush = (bcnode[0]-1)*2 + (bcnode[1]-1);
-        vector[indexToPush] = 0;
+        vector[indexToPush] = [0];
     });
     return vector;
 };
 
 
 // 
-const applyContornConditions = (superposedMatrix, globalForcesVector) => {
+const applyContornConditions = (superposedMatrix, globalForcesVector, globalForcesVector1) => {
   	const vforcas2 = [];
     const indices = [];
     for(var força=0; força < globalForcesVector.length;força+=1) {
         if(globalForcesVector[força][0] !== 0) {
             indices.push(força);
-            vforcas2.push(globalForcesVector[força]);
+            vforcas2.push(globalForcesVector1[força]);
         }
     }
     const size = indices.length;
@@ -310,13 +310,13 @@ const Jacobi = (ite, tol, a, b) => {
     return { a: v, b: error };
 };
 
-const reac_apoios = (matrizona, vforcas, deslocamentos, indices) => {
-    const apoios = [];
-    for(var indice =0; indice <  vforcas.length;indice++) {   
-        if (vforcas[indice][0] === 0){
-			apoios.push(indice);
-        }
-    }
+const reac_apoios = (matrizona, vforcas, deslocamentos, indices, reactionIndexes) => {
+    const apoios = reactionIndexes;
+    // for(var indice =0; indice <  vforcas.length;indice++) {   
+    //     if (vforcas[indice][0] === 0){
+	// 		apoios.push(indice);
+    //     }
+    // }
 
 	const sizel = apoios.length;
     const sizec = indices.length;   
@@ -336,16 +336,47 @@ const reac_apoios = (matrizona, vforcas, deslocamentos, indices) => {
 	return reacoes;
 };
 
+const finalizeDeslocs = (deslocArray, indices, n ) => {
+    const array = [];
+    let counterDeslocArray = 0;
+    for(var i = 0; i < n * 2 ;i++) {
+        array[i] = 0;
+    }
+    indices.map((indice, index) => {       
+        array[indice] = deslocArray[index];       
+    });
+    return array;
+};
+
+const getReactionIndices = (deslocIndices,n) => {
+    const reactionIndices = [];
+    for(var i =0; i<n*2;i++) {
+        if(!deslocIndices.includes(i)) {
+            reactionIndices.push(i);
+        }
+    }
+    return reactionIndices;
+};
+
 export const doEverything = (state) => {
     const elementsMatrix =  getEachElementsMatrix(state);
     // const superposedMatrix = superposeMatrix(elementsMatrix);   
     // const globalForcesVector = getGlobalForcesVector(state);    
+    // const nodesDeslocationVector = getNodesDeslocationVector(state); // n entendi onde vai usar isso que eu fiz     
     const superposedMatrix = [[51200, 38400, 0, 0, -51200, -38400], [38400, 217361.8, 0, -188561.8, 38400, 28800], [0, 0, 141423.5, 0, -141423.5, 0], [0, -188561, 8, 0, 188561.5, 0, 0], [-51200, -38400, -141423.5, 0, 192621.3, 38400], [-38400, -28800, 0, 0, 38400, 28800]];
     const globalForcesVector = [[0], [0], [0], [0], [1500], [-1000]];
-    const nodesDeslocationVector = getNodesDeslocationVector(state); // n entendi onde vai usar isso que eu fiz 
-    const { matriz, indices, vforcas2 } =  applyContornConditions(superposedMatrix, globalForcesVector);
+    const nodesDeslocationVector = [[0], [0], [0], [0], [1], [1]];
+    console.log('vetor de deslocamento dos nós: ',nodesDeslocationVector);
+    const { matriz, indices, vforcas2 } =  applyContornConditions(superposedMatrix, nodesDeslocationVector, globalForcesVector);
+    console.log('indices com deslocamento: ', indices );
+    console.log('forças globais cortadas: ', vforcas2);
+    console.log('matriz contornada: ', matriz);
+    
+    
     let matrixAnswer;
     let error;
+    console.log('Método de convergência selecionado: ', state.method);
+    
     if(state.method === 'jacobi') {
        const {a, b} =  Gauss(state.iterations, state.tolerance, matriz, vforcas2);
        matrixAnswer = a;
@@ -355,15 +386,19 @@ export const doEverything = (state) => {
         matrixAnswer = a;
         error = b;
     }
-    const reacoes = reac_apoios(superposedMatrix, globalForcesVector, matrixAnswer, indices);
+    const reactionIndices = getReactionIndices(indices, state.coordinates.length);
+    const reacoes = reac_apoios(superposedMatrix, globalForcesVector, matrixAnswer, indices, reactionIndices);  
+    const deslocs = finalizeDeslocs(matrixAnswer, indices, state.coordinates.length);
+    console.log('deslocamentos: ', deslocs);
+    console.log('reacoes de apoio: ', reacoes);
+    
     
     // const deformacoes = deformacao(state,matrixAnswer,indices);  
-    console.log(reacoes);
-    console.log(matrixAnswer);
+    // const tensoes = tensao(deformacoes,state.materials);
     return {
         displacements: matrixAnswer,
-        // element_strains:,
-        // element_stresses,
+        // element_strains: tensoes,
+        // element_stresses: deformacoes,
         reaction_forces: reacoes,
     };
 };

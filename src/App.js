@@ -86,9 +86,7 @@ class App extends Component {
     });
   };
 
-  render() {
-    console.log(this.state.method);
-    
+  render() {  
     return <div className="App">
         {
           !this.state.simulate ?
