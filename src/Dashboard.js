@@ -11,7 +11,7 @@ class Dashboard extends Component {
 
   render() {
     const deslocationData= {
-        labels: ["Node 1", "Node 2"],
+        labels: this.props.results.displacements.map((e,index) => `Nó ${index+1}`),
         datasets: [{
         label: "Deslocamentos",
         backgroundColor: "rgb(102, 0, 171)",

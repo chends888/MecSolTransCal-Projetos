@@ -349,13 +349,11 @@ const getReactionIndices = (deslocIndices,n) => {
 };
 
 const calc_deformacao = (desloc_decomp, v) => {
-    console.log(desloc_decomp);
     const length = Math.sqrt(Math.pow(v[0] - v[2], 2) + Math.pow(v[1] - v[3], 2));
     const cos = (v[3] - v[1])/length;
     const sen = (v[2] - v[0])/length;
     const cossen = [[-cos, -sen, cos, sen]];
     let resultado = math.multiply(cossen, desloc_decomp);
-    console.log(resultado);
     resultado = resultado/length;
     return resultado
 };
@@ -411,9 +409,9 @@ export const doEverything = (state) => {
     console.log('tensoes: ', tensoes);
     
     return {
-        displacements: matrixAnswer,
+        displacements: deslocs,
         element_strains: deformacoes,
         element_stresses: tensoes,
-        reaction_forces: reacoes,
+        reaction_forces: reactions,
     };
 };
