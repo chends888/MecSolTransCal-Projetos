@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 
 
 def save_entry_fields():
