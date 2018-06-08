@@ -1,5 +1,6 @@
-from tkinter import *
-
+from Tkinter import *
+from PIL import ImageTk, Image
+import os
 
 def save_entry_fields():
 	x = ex.get()
@@ -25,26 +26,32 @@ def save_entry_fields():
 def on_checkbutton_click():
 	if isByTime.get() == 1:
 		#print("Checkbutton selected")
-
-		Label(master, text="Tolerancia admissivel", fg="light gray").grid(row=8)
-		Label(master, text="Tempo maximo").grid(row=8) #True
+		Label(master, text="Tolerancia admissivel", bg = 'white', fg="white").grid(row=8, sticky=E)
+		Label(master, text="Tempo maximo", bg="white").grid(row=8, sticky=E) #True
 	else:
 		#print("Checkbutton not selected")
-		Label(master, text="Tolerancia admissivel").grid(row=8) #False
+		Label(master, text="Tolerancia admissivel", bg="white").grid(row=8, sticky=E) #False
 
 master = Tk()
 master.title("Projeto 2")
-Label(master, text="Comprimento da barra").grid(row=0)
-Label(master, text="Largura da barra").grid(row=1)
-Label(master, text="Temperatura inicial").grid(row=2)
-Label(master, text="Delta x").grid(row=3)
-Label(master, text="Delta y").grid(row=4)
-Label(master, text="Delta tempo").grid(row=5)
-Label(master, text="Alfa").grid(row=6)
-Label(master, text="Tolerancia admissivel").grid(row=8) #False
+master.configure(background='white')
+
+pic = PhotoImage(file = 'banner.png')
+label1 = Label(image=pic)
+label1.image = pic
+label1.grid(row=0, column = 0, columnspan = 2, sticky=NW)
+
+Label(master, text="Comprimento da barra", bg="white").grid(row=2, sticky=E)
+Label(master, text="Largura da barra", bg="white").grid(row=3, sticky=E)
+Label(master, text="Temperatura inicial", bg="white").grid(row=4, sticky=E)
+Label(master, text="Delta x", bg="white").grid(row=5, sticky=E)
+Label(master, text="Delta y", bg="white").grid(row=6, sticky=E)
+Label(master, text="Delta tempo", bg="white").grid(row=7, sticky=E)
+Label(master, text="Alfa", bg="white").grid(row=8, sticky=E)
+Label(master, text="Tolerancia admissivel", bg="white").grid(row=10, sticky=E) #False
 
 isByTime = IntVar()
-C1 = Checkbutton(master, text = "Por tempo", variable = isByTime, command=on_checkbutton_click).grid(row=7)
+C1 = Checkbutton(master, text = "Por tempo", variable = isByTime, bg="white", command=on_checkbutton_click).grid(row=9, sticky=E)
 
 ex = Entry(master)
 ey = Entry(master)
@@ -56,16 +63,17 @@ ealfa = Entry(master)
 etoltmax = Entry(master)
 
 
-ex.grid(row=0, column=1)
-ey.grid(row=1, column=1)
-etemp.grid(row=2, column=1)
-edx.grid(row=3, column=1)
-edy.grid(row=4, column=1)
-edt.grid(row=5, column=1)
-ealfa.grid(row=6, column=1)
-etoltmax.grid(row=8, column=1)
+ex.grid(row=2, column=1, sticky=W)
+ey.grid(row=3, column=1, sticky=W)
+etemp.grid(row=4, column=1, sticky=W)
+edx.grid(row=5, column=1, sticky=W)
+edy.grid(row=6, column=1, sticky=W)
+edt.grid(row=7, column=1, sticky=W)
+ealfa.grid(row=8, column=1, sticky=W)
+etoltmax.grid(row=10, column=1, sticky=W)
 
-Button(master, text='Salvar', command=save_entry_fields).grid(row=11, column=0, pady=4)
-Button(master, text='Fechar', command=master.quit).grid(row=11, column=1, pady=4)
+Button(master, text='Resolver', bg="black", fg = "white", command=save_entry_fields).grid(row=12, column=0, pady=4, sticky=E)
+Button(master, text='Fechar', bg="black", fg = "white", command=master.quit).grid(row=12, column=1, pady=4, sticky=W)
+
 
 mainloop()
